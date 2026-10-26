@@ -1,0 +1,8 @@
+{
+  // Статический сайт TIGI BAR: Cloudflare раздаёт файлы из папки public
+  "name": "tigi-bar-checklist",
+  "compatibility_date": "2026-09-01",
+  "assets": {
+    "directory": "./public"
+  }
+}
