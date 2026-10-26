@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0d0c0f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="TIGI BAR">
+<title>TIGI BAR Чек-лист</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230d0c0f'/%3E%3Ctext x='32' y='44' font-family='Impact,Arial' font-size='34' font-weight='700' text-anchor='middle' fill='%23e62429'%3ET%3C/text%3E%3C/svg%3E">
+<style>html,body{margin:0}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}[hidden]{display:none!important}</style>
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Oswald:wght@600;700&display=swap">
+<script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                colors: {
+                    tigi: {
+                        dark: '#0d0c0f',
+                        card: '#16141a',
+                        cardHover: '#1d1a22',
+                        border: '#2b2633',
+                        red: '#e62429',
+                        redGlow: '#ff2d37',
+                        wood: '#3b2820',
+                        gold: '#dfb15b',
+                        text: '#e6e4ec',
+                        muted: '#8e8a9f'
+                    }
+                },
+                fontFamily: {
+                    sans: ['Montserrat', 'system-ui', '-apple-system', 'Segoe UI', 'sans-serif'],
+                    brand: ['Oswald', 'Impact', 'Arial Narrow', 'sans-serif']
+                }
+            }
+        }
+    }
+</script>
+<style>
+    /* Брендовый тёмный вид TIGI BAR — единая тема по замыслу */
+    :root {
+        --bg: #0d0c0f;
+        --fg: #e6e4ec;
+        color-scheme: dark;
+    }
+
+    body {
+        background-color: var(--bg);
+        color: var(--fg);
+        font-family: 'Montserrat', system-ui, -apple-system, 'Segoe UI', sans-serif;
+        background-image:
+            radial-gradient(circle at 10% 10%, rgba(230, 36, 41, 0.08) 0%, transparent 45%),
+            radial-gradient(circle at 90% 90%, rgba(230, 36, 41, 0.05) 0%, transparent 45%);
+        background-attachment: fixed;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    body::before {
+        content: "";
+        position: fixed;
+        inset: 0 0 auto;
+        height: env(safe-area-inset-top, 0px);
+        z-index: 60;
+        background: var(--bg);
+    }
+
+    .gutter {
+        padding-left: max(16px, env(safe-area-inset-left, 0px));
+        padding-right: max(16px, env(safe-area-inset-right, 0px));
+    }
+
+    .sticky-head { top: env(safe-area-inset-top, 0px); }
+
+    .ic {
+        width: 1em;
+        height: 1em;
+        display: inline-block;
+        vertical-align: -0.125em;
+        flex-shrink: 0;
+    }
+
+    .neon-red {
+        text-shadow: 0 0 6px rgba(255, 45, 55, 0.8),
+                     0 0 14px rgba(255, 45, 55, 0.4),
+                     0 0 28px rgba(255, 45, 55, 0.25);
+    }
+
+    .neon-box {
+        box-shadow: 0 0 20px rgba(230, 36, 41, 0.18);
+        border: 1px solid rgba(230, 36, 41, 0.35);
+    }
+
+    .custom-checkbox {
+        appearance: none;
+        -webkit-appearance: none;
+        width: 24px;
+        height: 24px;
+        border: 2px solid #3b3447;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        background: #110f14;
+        flex-shrink: 0;
+    }
+
+    .custom-checkbox:focus-visible {
+        outline: 2px solid #dfb15b;
+        outline-offset: 2px;
+    }
+
+    .custom-checkbox:checked {
+        background-color: #e62429;
+        border-color: #ff2d37;
+        box-shadow: 0 0 12px rgba(230, 36, 41, 0.6);
+    }
+
+    .custom-checkbox:checked::after {
+        content: '✓';
+        position: absolute;
+        color: white;
+        font-weight: bold;
+        font-size: 15px;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+
+    button:focus-visible {
+        outline: 2px solid #dfb15b;
+        outline-offset: 2px;
+    }
+
+    .task-card { transition: all 0.2s ease-in-out; }
+
+    .task-card.completed {
+        opacity: 0.5;
+        background: rgba(18, 16, 22, 0.7);
+        border-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .task-card.completed .task-title {
+        text-decoration: line-through;
+        color: #726e82;
+    }
+
+    #progress-percent, #progress-count { font-variant-numeric: tabular-nums; }
+
+    .modal-wrap {
+        padding-top: max(16px, env(safe-area-inset-top, 0px));
+        padding-bottom: max(16px, env(safe-area-inset-bottom, 0px));
+        padding-left: max(16px, env(safe-area-inset-left, 0px));
+        padding-right: max(16px, env(safe-area-inset-right, 0px));
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after { transition: none !important; animation: none !important; }
+    }
+
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
+    ::-webkit-scrollbar-track { background: #0d0c0f; }
+    ::-webkit-scrollbar-thumb { background: #2b2633; border-radius: 2px; }
+    ::-webkit-scrollbar-thumb:hover { background: #e62429; }
+</style>
+</head>
+<body>
+
+<div class="min-h-screen pb-24 font-sans antialiased selection:bg-tigi-red selection:text-white">
+
+    <!-- Хедер TIGI BAR -->
+    <header class="sticky sticky-head z-50 bg-tigi-dark/95 backdrop-blur-md border-b border-tigi-border/80 py-3 shadow-2xl gutter">
+        <div class="max-w-xl mx-auto flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <div class="bg-black/90 px-3 py-1 rounded-md border border-tigi-border flex items-center font-brand text-2xl font-extrabold tracking-wider">
+                    <span class="text-white">T</span>
+                    <span class="text-tigi-red neon-red">I</span>
+                    <span class="text-white">G</span>
+                    <span class="text-tigi-red neon-red">I</span>
+                    <span class="text-[11px] text-tigi-muted ml-2 font-sans font-medium tracking-normal uppercase">Bar</span>
+                </div>
+            </div>
+
+            <div class="text-right">
+                <div class="text-[10px] text-tigi-red font-bold uppercase tracking-widest flex items-center justify-end gap-1">
+                    <span class="w-1.5 h-1.5 rounded-full bg-tigi-red animate-pulse"></span> Vietnam
+                </div>
+                <div id="current-date" class="text-xs text-tigi-text font-semibold">--.--.----</div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-xl mx-auto pt-5 gutter">
+
+        <!-- Карточка прогресса смены -->
+        <div class="bg-tigi-card p-4 rounded-2xl border border-tigi-border mb-5 neon-box relative overflow-hidden">
+            <div class="flex justify-between items-end mb-2.5 gap-3">
+                <div class="min-w-0">
+                    <h2 class="text-[11px] uppercase tracking-widest text-tigi-muted font-extrabold">Прогресс текущего режима</h2>
+                    <div class="text-2xl font-black text-white flex items-baseline gap-2 flex-wrap">
+                        <span id="progress-percent" class="text-tigi-redGlow font-brand text-3xl">0%</span>
+                        <span id="progress-count" class="text-xs text-tigi-muted font-normal">(0 из 0 выполнено)</span>
+                    </div>
+                </div>
+                <button id="btn-reset" type="button" onclick="confirmReset()" class="text-xs bg-tigi-dark hover:bg-tigi-border text-tigi-muted hover:text-white px-3 py-1.5 rounded-xl border border-tigi-border transition flex items-center gap-1.5 active:scale-95 shadow-md shrink-0">
+                    <span class="text-tigi-red" data-i="rotate"></span>
+                    <span>Сброс</span>
+                </button>
+            </div>
+
+            <!-- Индикатор -->
+            <div class="w-full h-2.5 bg-tigi-dark rounded-full overflow-hidden border border-tigi-border/60">
+                <div id="progress-bar" class="h-full bg-gradient-to-r from-tigi-red via-red-500 to-amber-500 rounded-full transition-all duration-500 ease-out" style="width: 0%"></div>
+            </div>
+        </div>
+
+        <!-- Переключатель основных режимов -->
+        <div class="grid grid-cols-3 gap-2 mb-6">
+            <button type="button" onclick="switchMode('regular')" id="mode-regular" class="mode-btn">
+                <span class="text-sm" data-i="users"></span>
+                <span>С помощником</span>
+            </button>
+            <button type="button" onclick="switchMode('solo')" id="mode-solo" class="mode-btn">
+                <span class="text-sm" data-i="user"></span>
+                <span>Соло-смена</span>
+            </button>
+            <button type="button" onclick="switchMode('periodic')" id="mode-periodic" class="mode-btn">
+                <span class="text-sm" data-i="calcheck"></span>
+                <span>2 нед. / Месяц</span>
+            </button>
+        </div>
+
+        <!-- РЕЖИМ 1: Регулярная смена (с помощником) -->
+        <div id="section-regular" class="mode-content space-y-6">
+            <div>
+                <div class="text-xs font-bold text-tigi-gold uppercase tracking-wider px-1 mb-3 flex items-center justify-between gap-2">
+                    <span class="flex items-center gap-2">
+                        <span data-i="door"></span>
+                        <span>1. Открытие и подготовка зала</span>
+                    </span>
+                    <span class="text-[10px] bg-tigi-gold/10 text-tigi-gold border border-tigi-gold/30 px-2 py-0.5 rounded-full shrink-0">9 задач</span>
+                </div>
+                <div id="list-regular-hall" class="space-y-2.5"></div>
+            </div>
+
+            <div>
+                <div class="text-xs font-bold text-tigi-red uppercase tracking-wider px-1 mb-3 flex items-center justify-between gap-2">
+                    <span class="flex items-center gap-2">
+                        <span data-i="smoke"></span>
+                        <span>2. Задачи по кальянам</span>
+                    </span>
+                    <span class="text-[10px] bg-tigi-red/10 text-tigi-red border border-tigi-red/30 px-2 py-0.5 rounded-full shrink-0">7 задач</span>
+                </div>
+                <div id="list-regular-hookah" class="space-y-2.5"></div>
+            </div>
+        </div>
+
+        <!-- РЕЖИМ 2: Соло-смена (без помощника) -->
+        <div id="section-solo" class="mode-content space-y-6 hidden">
+
+            <div class="bg-gradient-to-r from-tigi-card via-tigi-border/40 to-tigi-card p-3.5 rounded-xl border border-tigi-red/40 flex items-start gap-3 shadow-lg">
+                <span class="text-tigi-red text-xl mt-0.5" data-i="heart"></span>
+                <div class="text-xs leading-relaxed text-tigi-text min-w-0">
+                    <strong class="text-white block font-bold mb-0.5">Мы — единая команда!</strong>
+                    Задачи соло-смены не исключают взаимопомощь. Если в смене 2 человека — помогайте друг другу выполнять этот список!
+                </div>
+            </div>
+
+            <div>
+                <div class="text-xs font-bold text-tigi-gold uppercase tracking-wider px-1 mb-3 flex items-center gap-2">
+                    <span data-i="bolt"></span>
+                    <span>1. Базовая подготовка бара (1-9)</span>
+                </div>
+                <div id="list-solo-base" class="space-y-2.5"></div>
+            </div>
+
+            <div>
+                <div class="text-xs font-bold text-tigi-red uppercase tracking-wider px-1 mb-3 flex items-center gap-2">
+                    <span data-i="flame"></span>
+                    <span>2. Кальянная зона</span>
+                </div>
+                <div id="list-solo-hookah" class="space-y-2.5"></div>
+            </div>
+
+            <div>
+                <div class="text-xs font-bold text-blue-400 uppercase tracking-wider px-1 mb-3 flex items-center justify-between gap-2">
+                    <span class="flex items-center gap-2">
+                        <span data-i="sparkle"></span>
+                        <span>3. Дополнительно Соло &amp; Бар</span>
+                    </span>
+                    <span class="text-[10px] bg-blue-500/10 text-blue-400 border border-blue-500/30 px-2 py-0.5 rounded-full shrink-0">14 задач</span>
+                </div>
+                <div id="list-solo-extra" class="space-y-2.5"></div>
+            </div>
+
+            <div>
+                <div class="text-xs font-bold text-purple-400 uppercase tracking-wider px-1 mb-3 flex items-center justify-between gap-2">
+                    <span class="flex items-center gap-2">
+                        <span data-i="crown"></span>
+                        <span>4. VIP Zona</span>
+                    </span>
+                    <span class="text-[10px] bg-purple-500/10 text-purple-400 border border-purple-500/30 px-2 py-0.5 rounded-full shrink-0">3 задачи</span>
+                </div>
+                <div id="list-solo-vip" class="space-y-2.5"></div>
+            </div>
+
+            <div>
+                <div class="text-xs font-bold text-amber-500 uppercase tracking-wider px-1 mb-3 flex items-center gap-2">
+                    <span data-i="moon"></span>
+                    <span>5. Вечерний регламент (С 18:00)</span>
+                </div>
+                <div id="list-solo-evening" class="space-y-2.5"></div>
+            </div>
+
+        </div>
+
+        <!-- РЕЖИМ 3: Периодический контроль -->
+        <div id="section-periodic" class="mode-content space-y-4 hidden">
+            <div class="text-xs font-bold text-tigi-muted uppercase tracking-wider px-1 mb-2 flex items-center gap-2">
+                <span class="text-tigi-red" data-i="caldays"></span>
+                <span>Глубокая очистка и техническое обслуживание</span>
+            </div>
+            <div id="list-periodic" class="space-y-3"></div>
+        </div>
+
+    </main>
+</div>
+
+<!-- Модальное окно сброса -->
+<div id="reset-modal" class="modal-wrap fixed inset-0 z-[70] bg-black/85 backdrop-blur-sm flex items-center justify-center" hidden>
+    <div class="bg-tigi-card border border-tigi-border p-5 rounded-2xl max-w-xs w-full text-center space-y-4 shadow-2xl" role="dialog" aria-modal="true" aria-labelledby="reset-title">
+        <div class="w-12 h-12 bg-tigi-red/10 border border-tigi-red/30 rounded-full flex items-center justify-center mx-auto text-tigi-red text-xl">
+            <span data-i="alert"></span>
+        </div>
+        <div>
+            <h3 id="reset-title" class="text-lg font-bold text-white">Сбросить отметки?</h3>
+            <p class="text-xs text-tigi-muted mt-1">Все выполненные галочки текущего режима будут очищены.</p>
+        </div>
+        <div class="flex gap-2 pt-2">
+            <button id="btn-reset-cancel" type="button" onclick="closeResetModal()" class="flex-1 py-2 rounded-xl bg-tigi-dark text-tigi-muted font-bold text-xs hover:text-white border border-tigi-border">Отмена</button>
+            <button id="btn-reset-confirm" type="button" onclick="executeReset()" class="flex-1 py-2 rounded-xl bg-tigi-red text-white font-bold text-xs hover:bg-tigi-redGlow shadow-lg">Сбросить</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Иконки (встроенные, без внешних библиотек)
+    const ICONS = {
+        users: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+        user: '<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+        calcheck: '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="m9 16 2 2 4-4"/>',
+        caldays: '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01"/>',
+        rotate: '<path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/>',
+        door: '<path d="M13 4h3a2 2 0 0 1 2 2v14"/><path d="M2 20h3"/><path d="M13 20h9"/><path d="M10 12v.01"/><path d="M13 4.56v16.16a1 1 0 0 1-1.24.97L5 20V5.56a2 2 0 0 1 1.51-1.94l4-1A2 2 0 0 1 13 4.56Z"/>',
+        smoke: '<path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2"/><path d="M9.6 4.6A2 2 0 1 1 11 8H2"/><path d="M12.6 19.4A2 2 0 1 0 14 16H2"/>',
+        heart: '<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>',
+        bolt: '<path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/>',
+        flame: '<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>',
+        sparkle: '<path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/>',
+        crown: '<path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zM5 20h14"/>',
+        moon: '<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>',
+        alert: '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4M12 17h.01"/>',
+        camera: '<path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/>',
+        book: '<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>'
+    };
+    function ic(name) {
+        return `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name] || ''}</svg>`;
+    }
+    function paintIcons(root) {
+        (root || document).querySelectorAll('[data-i]').forEach(el => {
+            if (!el.dataset.done) { el.innerHTML = ic(el.dataset.i); el.dataset.done = '1'; el.style.display = 'inline-flex'; }
+        });
+    }
+
+    // База данных задач по режимам и категориям
+    const tasksDatabase = {
+        regular: {
+            hall: [
+                { id: 'reg_h1', title: 'Вынести столы и стулья на улицу', hasPhoto: false },
+                { id: 'reg_h2', title: 'Включить подсветку за баром и вытяжки', hasPhoto: true },
+                { id: 'reg_h3', title: 'Включить 4 светильника на первом этаже вдоль столов', hasPhoto: true },
+                { id: 'reg_h4', title: 'Рядом с ними включить подсветку под лестницей и цветком', hasPhoto: false },
+                { id: 'reg_h5', title: 'Включить вытяжку для плиты', hasPhoto: true },
+                { id: 'reg_h6', title: 'Вставить в розетку переходник с кофемашинкой, кулером, духовкой', hasPhoto: true },
+                { id: 'reg_h7', title: 'Включить кондиционер перед баром', hasPhoto: false },
+                { id: 'reg_h8', title: 'Включить проектор на первом этаже и включить YouTube с костром', hasPhoto: false },
+                { id: 'reg_h9', title: 'Включить колонку и поставить через рабочий телефон в YouTube музыку', hasPhoto: false }
+            ],
+            hookah: [
+                { id: 'reg_hk1', title: 'Помыть колбы и шахты', hasPhoto: false },
+                { id: 'reg_hk2', title: 'Протереть плиту', hasPhoto: false },
+                { id: 'reg_hk3', title: 'Протереть холодильник, где висят шланги для кальянов', hasPhoto: false },
+                { id: 'reg_hk4', title: 'Проверить расположение табаков', hasPhoto: false },
+                { id: 'reg_hk5', title: 'Протереть полки с табаками', hasPhoto: false },
+                { id: 'reg_hk6', title: 'Пополнить угли в коробке', hasPhoto: false },
+                { id: 'reg_hk7', title: 'Пополнить мундштуки в коробке', hasPhoto: false }
+            ]
+        },
+        solo: {
+            base: [
+                { id: 'solo_b1', title: 'Вынести столы и стулья на улицу', hasPhoto: false },
+                { id: 'solo_b2', title: 'Включить подсветку за баром и вытяжки', hasPhoto: true },
+                { id: 'solo_b3', title: 'Включить 4 светильника на первом этаже вдоль столов', hasPhoto: true },
+                { id: 'solo_b4', title: 'Рядом с ними включить подсветку под лестницей и цветком', hasPhoto: false },
+                { id: 'solo_b5', title: 'Включить вытяжку для плиты', hasPhoto: true },
+                { id: 'solo_b6', title: 'Вставить в розетку переходник с кофемашинкой, кулером, духовкой', hasPhoto: true },
+                { id: 'solo_b7', title: 'Включить кондиционер перед баром', hasPhoto: false },
+                { id: 'solo_b8', title: 'Включить проектор на первом этаже и включить YouTube с костром', hasPhoto: false },
+                { id: 'solo_b9', title: 'Включить колонку и поставить через рабочий телефон в YouTube музыку', hasPhoto: false }
+            ],
+            hookah: [
+                { id: 'solo_hk1', title: 'Помыть колбы и шахты', hasPhoto: false },
+                { id: 'solo_hk2', title: 'Протереть плиту', hasPhoto: false },
+                { id: 'solo_hk3', title: 'Протереть холодильник, где висят шланги для кальянов', hasPhoto: false },
+                { id: 'solo_hk4', title: 'Проверить расположение табаков', hasPhoto: false },
+                { id: 'solo_hk5', title: 'Протереть полки с табаками', hasPhoto: false },
+                { id: 'solo_hk6', title: 'Пополнить угли в коробке', hasPhoto: false },
+                { id: 'solo_hk7', title: 'Пополнить мундштуки в коробке', hasPhoto: false }
+            ],
+            extra: [
+                { id: 'solo_ex1', title: 'Включить свет и вытяжку в туалете (находится в шкафу перед туалетом на стене)', hasPhoto: true },
+                { id: 'solo_ex2', title: 'Включить очиститель воздуха в туалете', hasPhoto: true },
+                { id: 'solo_ex3', title: 'Протереть металлические ставни у стульев', hasPhoto: false },
+                { id: 'solo_ex4', title: 'Протереть металлические ножки у столов', hasPhoto: false },
+                { id: 'solo_ex5', title: 'Протереть столы', hasPhoto: false },
+                { id: 'solo_ex6', title: 'Положить и намочить в пепельницу салфетку и вынести на столы на улице', hasPhoto: false },
+                { id: 'solo_ex7', title: 'Подмести полы', hasPhoto: false },
+                { id: 'solo_ex8', title: 'Помыть полы', hasPhoto: false },
+                { id: 'solo_ex9', title: 'Протереть снаружи и внутри окна и дверь с жидкостью для окон', hasPhoto: false },
+                { id: 'solo_ex10', title: 'Разложить салфетки для столов', hasPhoto: false },
+                { id: 'solo_ex11', title: 'Залить воду в кулер', hasPhoto: false },
+                { id: 'solo_ex12', title: 'Залить воду в кофемашинку', hasPhoto: false },
+                { id: 'solo_ex13', title: 'Засыпать кофе в кофемашинку', hasPhoto: false },
+                { id: 'solo_ex14', title: 'Проверить деньги в кассе (всегда должно быть 2 млн. VND)', hasPhoto: false }
+            ],
+            vip: [
+                { id: 'solo_vip1', title: 'Включить кондиционер в VIP зоне', hasPhoto: false },
+                { id: 'solo_vip2', title: 'Включить торшер возле телевизора', hasPhoto: false },
+                { id: 'solo_vip3', title: 'Включить YouTube и поставить видео с костром через YouTube', hasPhoto: false }
+            ],
+            evening: [
+                { id: 'solo_eve1', title: 'С 18:00: Включить возле третьего столика вывеску на улице, фонарики на улице и подсветку', hasPhoto: true }
+            ]
+        },
+        periodic: [
+            {
+                id: 'per_1',
+                title: 'Раз в 2 недели: Промывка колб кальяна с лимонной кислотой',
+                period: 'Раз в 2 недели',
+                instruction: 'Засыпаем в колбу 2-3 ложки лимонной кислоты, заливаем 1 см водой из под крана, далее заливаем горячей водой до горлышка, размешиваем лимонную кислоту и оставляем на 15 минут. Далее щеткой убираем внутри налет, промываем колбу и заливаем новой водой.'
+            },
+            {
+                id: 'per_2',
+                title: 'Раз в 2 недели: Промывать коврик кальянщика возле раковины',
+                period: 'Раз в 2 недели',
+                instruction: 'Вынести коврик, тщательно промыть под напором воды с моющим средством, просушить перед укладкой обратно.'
+            },
+            {
+                id: 'per_3',
+                title: 'Раз в 2 недели / Месяц: Прочищать калауд горячей водой',
+                period: '1-2 раза в месяц',
+                instruction: 'Кипятком ошпариваем калауд, далее калауд берем тряпочкой, чтобы не обжечься, и начищаем со всех сторон до блеска.'
+            }
+        ]
+    };
+
+    // Сохранение отметок на этом устройстве (безопасно, если хранилище недоступно)
+    const STORE_KEY = 'tigi_bar_state_v2';
+    const MODE_KEY = 'tigi_bar_mode';
+    function loadState() {
+        try { return JSON.parse(localStorage.getItem(STORE_KEY) || '{}') || {}; } catch (e) { return {}; }
+    }
+    function saveState() {
+        try { localStorage.setItem(STORE_KEY, JSON.stringify(checkedTasks)); } catch (e) {}
+    }
+    let checkedTasks = loadState();
+    let currentMode = 'regular';
+
+    function renderDate() {
+        const now = new Date();
+        document.getElementById('current-date').innerText =
+            now.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    }
+
+    function createCardHTML(task) {
+        const isChecked = !!checkedTasks[task.id];
+        return `
+            <div class="task-card bg-tigi-card p-3 rounded-xl border border-tigi-border flex items-start gap-3 ${isChecked ? 'completed' : ''}" id="card-${task.id}">
+                <input type="checkbox" id="${task.id}" class="custom-checkbox mt-0.5" ${isChecked ? 'checked' : ''} onchange="toggleTask('${task.id}')">
+                <label for="${task.id}" class="flex-1 min-w-0 cursor-pointer select-none">
+                    <span class="task-title text-xs font-semibold text-tigi-text leading-relaxed block">${task.title}</span>
+                    ${task.hasPhoto ? `
+                        <span class="inline-flex items-center gap-1 text-[10px] text-tigi-gold/80 bg-tigi-gold/10 px-2 py-0.5 rounded border border-tigi-gold/20 mt-1">
+                            ${ic('camera')} <span>Ожидается фото-инструкция</span>
+                        </span>
+                    ` : ''}
+                </label>
+            </div>
+        `;
+    }
+
+    function renderAllLists() {
+        document.getElementById('list-regular-hall').innerHTML = tasksDatabase.regular.hall.map(createCardHTML).join('');
+        document.getElementById('list-regular-hookah').innerHTML = tasksDatabase.regular.hookah.map(createCardHTML).join('');
+
+        document.getElementById('list-solo-base').innerHTML = tasksDatabase.solo.base.map(createCardHTML).join('');
+        document.getElementById('list-solo-hookah').innerHTML = tasksDatabase.solo.hookah.map(createCardHTML).join('');
+        document.getElementById('list-solo-extra').innerHTML = tasksDatabase.solo.extra.map(createCardHTML).join('');
+        document.getElementById('list-solo-vip').innerHTML = tasksDatabase.solo.vip.map(createCardHTML).join('');
+        document.getElementById('list-solo-evening').innerHTML = tasksDatabase.solo.evening.map(createCardHTML).join('');
+
+        document.getElementById('list-periodic').innerHTML = tasksDatabase.periodic.map(task => {
+            const isChecked = !!checkedTasks[task.id];
+            return `
+                <div class="task-card bg-tigi-card p-4 rounded-xl border border-tigi-border space-y-3 ${isChecked ? 'completed' : ''}" id="card-${task.id}">
+                    <div class="flex items-start gap-3">
+                        <input type="checkbox" id="${task.id}" class="custom-checkbox mt-0.5" ${isChecked ? 'checked' : ''} onchange="toggleTask('${task.id}')">
+                        <label for="${task.id}" class="flex-1 min-w-0 cursor-pointer select-none">
+                            <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-tigi-red/10 text-tigi-red border border-tigi-red/20 inline-block mb-1">${task.period}</span>
+                            <span class="task-title text-sm font-bold text-white leading-snug block">${task.title}</span>
+                        </label>
+                    </div>
+                    ${task.instruction ? `
+                        <div class="text-xs text-tigi-muted bg-tigi-dark/90 p-3 rounded-lg border border-tigi-border/80 space-y-1">
+                            <div class="text-tigi-gold font-bold flex items-center gap-1.5 text-[11px] uppercase tracking-wider">
+                                ${ic('book')} Инструкция выполнения:
+                            </div>
+                            <div class="leading-relaxed text-tigi-text">${task.instruction}</div>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }).join('');
+    }
+
+    function toggleTask(id) {
+        checkedTasks[id] = !checkedTasks[id];
+        if (!checkedTasks[id]) delete checkedTasks[id];
+        saveState();
+        const card = document.getElementById(`card-${id}`);
+        if (card) card.classList.toggle('completed', !!checkedTasks[id]);
+        updateProgress();
+    }
+
+    function getActiveTasksList() {
+        if (currentMode === 'regular') {
+            return [...tasksDatabase.regular.hall, ...tasksDatabase.regular.hookah];
+        } else if (currentMode === 'solo') {
+            const s = tasksDatabase.solo;
+            return [...s.base, ...s.hookah, ...s.extra, ...s.vip, ...s.evening];
+        }
+        return tasksDatabase.periodic;
+    }
+
+    function updateProgress() {
+        const activeTasks = getActiveTasksList();
+        const total = activeTasks.length;
+        const completed = activeTasks.filter(t => checkedTasks[t.id]).length;
+        const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
+        document.getElementById('progress-percent').innerText = `${percent}%`;
+        document.getElementById('progress-count').innerText = `(${completed} из ${total} выполнено)`;
+        document.getElementById('progress-bar').style.width = `${percent}%`;
+    }
+
+    const BTN_BASE = "mode-btn py-3 px-2 rounded-xl text-[11px] font-bold uppercase tracking-wider transition border text-center flex flex-col items-center justify-center gap-1.5 ";
+    function switchMode(mode) {
+        currentMode = mode;
+        try { localStorage.setItem(MODE_KEY, mode); } catch (e) {}
+        ['regular', 'solo', 'periodic'].forEach(m => {
+            const btn = document.getElementById(`mode-${m}`);
+            const sec = document.getElementById(`section-${m}`);
+            if (m === mode) {
+                btn.className = BTN_BASE + "bg-tigi-red text-white border-tigi-redGlow shadow-lg shadow-tigi-red/25";
+                btn.setAttribute('aria-pressed', 'true');
+                sec.classList.remove('hidden');
+            } else {
+                btn.className = BTN_BASE + "bg-tigi-card text-tigi-muted border-tigi-border hover:text-white hover:bg-tigi-cardHover";
+                btn.setAttribute('aria-pressed', 'false');
+                sec.classList.add('hidden');
+            }
+        });
+        updateProgress();
+    }
+
+    function confirmReset() { document.getElementById('reset-modal').hidden = false; }
+    function closeResetModal() { document.getElementById('reset-modal').hidden = true; }
+    function executeReset() {
+        getActiveTasksList().forEach(t => { delete checkedTasks[t.id]; });
+        saveState();
+        renderAllLists();
+        updateProgress();
+        closeResetModal();
+    }
+
+    document.getElementById('reset-modal').addEventListener('click', e => {
+        if (e.target.id === 'reset-modal') closeResetModal();
+    });
+
+    function start() {
+        paintIcons();
+        renderDate();
+        renderAllLists();
+        let saved = 'regular';
+        try { saved = localStorage.getItem(MODE_KEY) || 'regular'; } catch (e) {}
+        switchMode(['regular', 'solo', 'periodic'].includes(saved) ? saved : 'regular');
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
+</script>
+</body>
+</html>
